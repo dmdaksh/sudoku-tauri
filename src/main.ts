@@ -6,6 +6,13 @@ import "./styles.css";
 type SudokuGrid = number[][];
 type Difficulty = "easy" | "medium" | "hard";
 
+// Extend Window interface to include resizeTimer property
+declare global {
+  interface Window {
+    resizeTimer: number | null;
+  }
+}
+
 // DOM Elements
 let board: HTMLElement;
 let statusMessage: HTMLElement;
@@ -135,14 +142,19 @@ window.addEventListener("DOMContentLoaded", () => {
   // Adjust UI for device size
   adjustUIForDevice();
 
+  // Initialize resizeTimer
+  window.resizeTimer = null;
+
   // Handle window resize
   window.addEventListener("resize", () => {
     adjustUIForDevice();
     // Add debouncing to avoid excessive recalculations
-    clearTimeout(window.resizeTimer);
+    if (window.resizeTimer !== null) {
+      clearTimeout(window.resizeTimer);
+    }
     window.resizeTimer = setTimeout(() => {
       resizeSudokuBoard();
-    }, 250) as unknown as number;
+    }, 250);
   });
 
   // Start a new game with default difficulty
@@ -206,9 +218,9 @@ function createNumberPad(): void {
  */
 function showDifficultyDialog(): void {
   resetTimer();
-  if (dialogOverlay) {
-        document.body.removeChild(dialogOverlay);
-        dialogOverlay = null;
+  if (dialogOverlay && document.body.contains(dialogOverlay)) {
+    document.body.removeChild(dialogOverlay);
+    dialogOverlay = null;
   }
   dialogOverlay = document.createElement("div");
   dialogOverlay.classList.add("dialog-overlay");
@@ -272,7 +284,7 @@ function showDifficultyDialog(): void {
   
   // Close dialog when clicking outside
   dialogOverlay.addEventListener("click", (e) => {
-    if (e.target === dialogOverlay) {
+    if (e.target === dialogOverlay && dialogOverlay && document.body.contains(dialogOverlay)) {
       document.body.removeChild(dialogOverlay);
       dialogOverlay = null;
     }
