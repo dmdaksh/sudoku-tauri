@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="/src/styles.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Sudoku</title>
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <main class="container">
+      <div id="game-canvas">
+        <div id="sudoku-container">
+          <div class="game-header">
+            <div id="timer">00:00</div>
+            <div id="hint" class="action-button">Hint</div>
+            <div id="clear" class="action-button">Clear</div>
+            <div id="difficulty-indicator" class="clickable">Easy</div>
+          </div>
+          <div id="sudoku-board"></div>
+          <div id="number-pad" class="number-selection">
+            <!-- Number pad will be created dynamically -->
+          </div>
+          <div id="status-message"></div>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
