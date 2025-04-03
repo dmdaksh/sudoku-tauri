@@ -28,8 +28,12 @@ let timerInterval: number | null = null;
 let startTime: number = 0;
 let gameActive: boolean = false;
 
+// Status message timeout
+let statusMessageTimeout: number | null = null;
+
 // Constants
 const EMPTY_CELL = 0;
+const STATUS_MESSAGE_DURATION = 2000; // 2 seconds
 
 // Check if we're on mobile
 function isMobileDevice(): boolean {
@@ -513,11 +517,34 @@ function handleArrowNavigation(e: KeyboardEvent, row: number, col: number): void
 }
 
 /**
+ * Sets a status message that will disappear after STATUS_MESSAGE_DURATION milliseconds.
+ */
+function setStatusMessage(message: string, className: string = "status-info"): void {
+  if (!statusMessage) return;
+  
+  // Clear any existing timeout
+  if (statusMessageTimeout !== null) {
+    clearTimeout(statusMessageTimeout);
+    statusMessageTimeout = null;
+  }
+  
+  // Set the message and class
+  statusMessage.textContent = message;
+  statusMessage.className = className;
+  
+  // Set a timeout to clear the message
+  statusMessageTimeout = setTimeout(() => {
+    if (statusMessage) statusMessage.textContent = "";
+    statusMessageTimeout = null;
+  }, STATUS_MESSAGE_DURATION);
+}
+
+/**
  * Starts a new game with a given difficulty.
  */
 async function startNewGame(difficulty: Difficulty): Promise<void> {
   try {
-    statusMessage.textContent = "";
+    statusMessage.textContent = ""; // Just clear without setting a timeout
     difficultyIndicator.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
     resetTimer();
     startTimer();
@@ -534,8 +561,7 @@ async function startNewGame(difficulty: Difficulty): Promise<void> {
     clearSelection();
   } catch (error) {
     console.error("Failed to start new game:", error);
-    statusMessage.textContent = "Failed to generate puzzle. Please try again.";
-    statusMessage.className = "status-error";
+    setStatusMessage("Failed to generate puzzle. Please try again.", "status-error");
   }
 }
 
@@ -563,8 +589,7 @@ function fillBoard(puzzle: SudokuGrid): void {
 async function validateGame(): Promise<void> {
   const currentState = getBoardState();
   if (!isGridComplete(currentState)) {
-    statusMessage.textContent = "Puzzle is not complete yet.";
-    statusMessage.className = "status-info";
+    setStatusMessage("Puzzle is not complete yet.", "status-info");
     return;
   }
   try {
@@ -572,21 +597,18 @@ async function validateGame(): Promise<void> {
     if (isValid) {
       stopTimer();
       const time = formatTime(Math.floor((Date.now() - startTime) / 1000));
-      statusMessage.textContent = `Congratulations! Solved in ${time}.`;
-      statusMessage.className = "status-success";
+      setStatusMessage(`Congratulations! Solved in ${time}.`, "status-success");
       document.querySelectorAll(".cell").forEach(cell => {
         cell.classList.add("success", "validation-animation");
         setTimeout(() => cell.classList.remove("validation-animation"), 1000);
       });
     } else {
-      statusMessage.textContent = "There are mistakes in your solution.";
-      statusMessage.className = "status-error";
+      setStatusMessage("There are mistakes in your solution.", "status-error");
       highlightErrors(currentState);
     }
   } catch (error) {
     console.error("Validation error:", error);
-    statusMessage.textContent = "Error validating puzzle.";
-    statusMessage.className = "status-error";
+    setStatusMessage("Error validating puzzle.", "status-error");
   }
 }
 
@@ -640,8 +662,7 @@ function clearBoard(): void {
     cell.textContent = "";
     cell.classList.remove("error", "success", "highlighted", "same-value", "related");
   });
-  statusMessage.textContent = "Board cleared. Good luck!";
-  statusMessage.className = "status-info";
+  setStatusMessage("Board cleared. Good luck!", "status-info");
   resetTimer();
   startTimer();
 }
@@ -655,8 +676,7 @@ async function provideHint(): Promise<void> {
   
   // Check if a cell is selected
   if (!selectedCell) {
-    statusMessage.textContent = "Please select a cell to get a hint.";
-    statusMessage.className = "status-info";
+    setStatusMessage("Please select a cell to get a hint.", "status-info");
     return;
   }
   
@@ -665,8 +685,7 @@ async function provideHint(): Promise<void> {
   
   // If selected cell is preset, can't provide a hint for it
   if (selectedCell.classList.contains("preset")) {
-    statusMessage.textContent = "This is a preset number. Try another cell.";
-    statusMessage.className = "status-info";
+    setStatusMessage("This is a preset number. Try another cell.", "status-info");
     return;
   }
   
@@ -687,8 +706,7 @@ async function provideHint(): Promise<void> {
     
     // If the current value is correct, inform the user
     if (currentValue !== 0 && currentValue === hint.value) {
-      statusMessage.textContent = "Good job! Your answer is correct.";
-      statusMessage.className = "status-success";
+      setStatusMessage("Good job! Your answer is correct.", "status-success");
       return;
     }
     
@@ -703,11 +721,10 @@ async function provideHint(): Promise<void> {
     
     // Display appropriate message based on whether cell was empty or had wrong answer
     if (currentValue === 0) {
-      statusMessage.textContent = `Hint provided: ${hint.value} is the correct number.`;
+      setStatusMessage(`Hint provided: ${hint.value} is the correct number.`, "status-info");
     } else {
-      statusMessage.textContent = `The correct number is ${hint.value}, not ${currentValue}.`;
+      setStatusMessage(`The correct number is ${hint.value}, not ${currentValue}.`, "status-info");
     }
-    statusMessage.className = "status-info";
     
     // Highlight related cells based on the new value
     highlightRelatedCells(selectedCell);
@@ -719,8 +736,7 @@ async function provideHint(): Promise<void> {
     }
   } catch (error) {
     console.error("Hint error:", error);
-    statusMessage.textContent = "Sorry, couldn't provide a hint right now.";
-    statusMessage.className = "status-error";
+    setStatusMessage("Sorry, couldn't provide a hint right now.", "status-error");
   }
 }
 
