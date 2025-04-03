@@ -15,6 +15,12 @@ A cross-platform Sudoku game built with Tauri, TypeScript, and Rust. Play the cl
 - Real-time error detection
 - Responsive design for all screen sizes
 
+## Demo
+
+Check out the demo video of the application below:
+
+[![Sudoku Tauri Demo](https://img.youtube.com/vi/VsY1-bjNgH4/0.jpg)](https://youtu.be/VsY1-bjNgH4)
+
 ## About Tauri
 
 [Tauri](https://tauri.app/) is a framework for building lightweight, secure desktop applications with web technologies. Tauri apps combine a Rust backend with a web-based frontend, resulting in smaller, faster, and more secure applications compared to traditional Electron apps.
